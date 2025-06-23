@@ -1,0 +1,866 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>家計診断ツール - 無料で家計の無駄を発見</title>
+    <meta name="description" content="家計の収支を分析し、無駄遣いを検出して節約ポテンシャルを計算する無料の家計診断ツール。統計データとの比較、グラフ可視化機能付き。">
+    
+    <!-- Google Tag Manager -->
+    <script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+    new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+    j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+    'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+    })(window,document,'script','dataLayer','GTM-TXQGZRF9');</script>
+    <!-- End Google Tag Manager -->
+    
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
+    <link rel="manifest" href="data:application/json;base64,ewogICJuYW1lIjogIuWuteiojOiwruaWreODhOODvOODqyIsCiAgInNob3J0X25hbWUiOiAi5a616KiO6LCu5patIiwKICAiZGVzY3JpcHRpb24iOiAi5a616KiO44Gu5pS25pSv44KS5YiG5p6Q44GX44CB54Sh6aeE6YG/44GE44KS5qSc5Ye644GX44Gm56+A57SE44Od44OG44Oz44K344Oj44Or44KS6KiI566X44GZ44KL54Sh5paZ44Gu5a616KiO6LCu5pat44OE44O844OrIiwKICAic3RhcnRfdXJsIjogIi4vIiwKICAiZGlzcGxheSI6ICJzdGFuZGFsb25lIiwKICAiYmFja2dyb3VuZF9jb2xvciI6ICIjZmZmZmZmIiwKICAidGhlbWVfY29sb3IiOiAiIzIwNjNlYiIsCiAgImljb25zIjogWwogICAgewogICAgICAic3JjIjogImRhdGE6aW1hZ2Uvc3ZnK3htbDtiYXNlNjQsUEhOMlp5QjNhV1IwYUQwaU1UY3lJaUJvWldsbmFIUTlJakUzTWlJZ2RtbGxkMEp2ZUQwaU1DQXdJREUzTWlBeE56SWlJR1pwYkd3OUltNXZibVVpSUhOMGNtOXJaVDBpSXpJd05qTmxZaUlnYzNSeWIydGxMWGRwWkhSb1BTSXpJaUJzYVc1bFFreGphVzVsUFNKeWIzVnVaQ0lnZUcxc2JuTTlJbWgwZEhBNkx5OTNkM2N1ZHpNdWIzSm5Mekl3TURBdmMzWm5JajQ4Y0dGMGFDQmtQU0pOT0RVdU5USWdORFV1TkRSRE9EY3VNRGNnTkRNdU5EZGNPRGt1TXpjZ05ESXVPVFJjT1RFdU56Y2dORFF1TVRnZ09UUXVOekVnTkRjdU5ERWdPVFl1TmprZ05UQXVPRFJnTlM0eU5pQjJOak11TnpOakxUSTVMalkyTFRJNUxqWTJMVE13TFMweE5DNHdOMDA0TlM0MU1pQTBOUzQwTkVvNU9DNDBOeUV6TURFdU1ESWdNakV6TGprNElETTJNaTQzTkNBek5qSXVOelJUTWprMUxqazNJRFUzTkM0M055QXlPVFV1T1RjZ05UYzBMamMzZWkwaU1DOXdZWFJvUGp3dmMzWm5QZz09IiwKICAgICAgInNpemVzIjogIjE3MngxNzIiLAogICAgICAidHlwZSI6ICJpbWFnZS9zdmcreG1sIgogICAgfQogIF0KfQ==">
+    
+    <style>
+        .chart-container {
+            position: relative;
+            height: 400px;
+            width: 100%;
+        }
+        .comparison-chart {
+            height: 300px;
+        }
+        @media print {
+            body { font-size: 12px; }
+            .no-print { display: none; }
+        }
+        .gradient-bg {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        .card-shadow {
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+        }
+        .input-focus:focus {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+        }
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        .fade-in-up {
+            animation: fadeInUp 0.6s ease-out;
+        }
+    </style>
+</head>
+<body class="bg-gray-50 min-h-screen">
+    <!-- Google Tag Manager (noscript) -->
+    <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-TXQGZRF9"
+    height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
+    <!-- End Google Tag Manager (noscript) -->
+
+    <div class="container mx-auto px-4 py-8 max-w-6xl">
+        <!-- Header -->
+        <header class="text-center mb-12 fade-in-up">
+            <div class="gradient-bg text-white p-8 rounded-xl card-shadow">
+                <h1 class="text-4xl font-bold mb-4">
+                    <i class="fas fa-chart-pie mr-3"></i>家計診断ツール
+                </h1>
+                <p class="text-xl opacity-90">家計の無駄を見える化し、節約ポテンシャルを発見</p>
+                <p class="text-sm mt-2 opacity-80">収支を入力するだけで改善ポイントと節約額が一目瞭然</p>
+            </div>
+        </header>
+
+        <!-- Input Form -->
+        <section id="input-section" class="mb-12 fade-in-up">
+            <div class="bg-white rounded-xl p-8 card-shadow">
+                <h2 class="text-2xl font-bold text-gray-800 mb-6 flex items-center">
+                    <i class="fas fa-edit text-blue-600 mr-3"></i>家計情報入力
+                </h2>
+                
+                <div class="grid md:grid-cols-2 gap-8">
+                    <!-- 基本情報 -->
+                    <div>
+                        <h3 class="text-lg font-semibold text-gray-700 mb-4">基本情報</h3>
+                        <div class="space-y-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-600 mb-2">月収（手取り）</label>
+                                <input type="number" id="income" class="w-full p-3 border border-gray-300 rounded-lg input-focus transition-all duration-200" placeholder="例: 350000">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-600 mb-2">家族構成</label>
+                                <select id="familyType" class="w-full p-3 border border-gray-300 rounded-lg input-focus transition-all duration-200">
+                                    <option value="single">単身</option>
+                                    <option value="couple">夫婦のみ</option>
+                                    <option value="family2">夫婦+子供1人</option>
+                                    <option value="family3">夫婦+子供2人</option>
+                                    <option value="family4">夫婦+子供3人以上</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-600 mb-2">居住地域</label>
+                                <select id="region" class="w-full p-3 border border-gray-300 rounded-lg input-focus transition-all duration-200">
+                                    <option value="tokyo">東京都</option>
+                                    <option value="osaka">大阪府</option>
+                                    <option value="aichi">愛知県</option>
+                                    <option value="kanagawa">神奈川県</option>
+                                    <option value="other">その他</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 支出項目 -->
+                    <div>
+                        <h3 class="text-lg font-semibold text-gray-700 mb-4">月間支出</h3>
+                        <div class="space-y-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-600 mb-2">住居費</label>
+                                <input type="number" id="housing" class="w-full p-3 border border-gray-300 rounded-lg input-focus transition-all duration-200" placeholder="例: 80000">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-600 mb-2">食費</label>
+                                <input type="number" id="food" class="w-full p-3 border border-gray-300 rounded-lg input-focus transition-all duration-200" placeholder="例: 60000">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-600 mb-2">水道光熱費</label>
+                                <input type="number" id="utilities" class="w-full p-3 border border-gray-300 rounded-lg input-focus transition-all duration-200" placeholder="例: 15000">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-600 mb-2">通信費</label>
+                                <input type="number" id="communication" class="w-full p-3 border border-gray-300 rounded-lg input-focus transition-all duration-200" placeholder="例: 12000">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-600 mb-2">交通費</label>
+                                <input type="number" id="transport" class="w-full p-3 border border-gray-300 rounded-lg input-focus transition-all duration-200" placeholder="例: 8000">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-600 mb-2">娯楽費</label>
+                                <input type="number" id="entertainment" class="w-full p-3 border border-gray-300 rounded-lg input-focus transition-all duration-200" placeholder="例: 30000">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-600 mb-2">その他</label>
+                                <input type="number" id="others" class="w-full p-3 border border-gray-300 rounded-lg input-focus transition-all duration-200" placeholder="例: 20000">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="text-center mt-8">
+                    <button onclick="analyzeBudget()" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-4 px-8 rounded-lg text-lg transition-colors duration-200 transform hover:scale-105">
+                        <i class="fas fa-calculator mr-2"></i>家計診断を実行
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- Results Section -->
+        <section id="results-section" class="hidden">
+            <!-- Summary Cards -->
+            <div class="grid md:grid-cols-3 gap-6 mb-8 fade-in-up">
+                <div class="bg-white rounded-xl p-6 card-shadow text-center">
+                    <i class="fas fa-wallet text-3xl text-green-600 mb-3"></i>
+                    <h3 class="text-lg font-semibold text-gray-700">収支バランス</h3>
+                    <p id="balance" class="text-2xl font-bold mt-2"></p>
+                </div>
+                <div class="bg-white rounded-xl p-6 card-shadow text-center">
+                    <i class="fas fa-piggy-bank text-3xl text-blue-600 mb-3"></i>
+                    <h3 class="text-lg font-semibold text-gray-700">貯蓄率</h3>
+                    <p id="savingsRate" class="text-2xl font-bold mt-2"></p>
+                </div>
+                <div class="bg-white rounded-xl p-6 card-shadow text-center">
+                    <i class="fas fa-chart-line text-3xl text-purple-600 mb-3"></i>
+                    <h3 class="text-lg font-semibold text-gray-700">節約ポテンシャル</h3>
+                    <p id="savingsPotential" class="text-2xl font-bold mt-2"></p>
+                </div>
+            </div>
+
+            <!-- Charts -->
+            <div class="grid md:grid-cols-2 gap-8 mb-8">
+                <!-- Current Budget Chart -->
+                <div class="bg-white rounded-xl p-6 card-shadow fade-in-up">
+                    <h3 class="text-xl font-bold text-gray-800 mb-4 flex items-center">
+                        <i class="fas fa-chart-pie text-blue-600 mr-2"></i>現在の家計構成
+                    </h3>
+                    <div class="chart-container">
+                        <canvas id="currentBudgetChart"></canvas>
+                    </div>
+                </div>
+
+                <!-- Comparison Chart -->
+                <div class="bg-white rounded-xl p-6 card-shadow fade-in-up">
+                    <h3 class="text-xl font-bold text-gray-800 mb-4 flex items-center">
+                        <i class="fas fa-balance-scale text-green-600 mr-2"></i>理想との比較
+                    </h3>
+                    <div class="comparison-chart">
+                        <canvas id="comparisonChart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Detailed Analysis -->
+            <div class="bg-white rounded-xl p-8 card-shadow mb-8 fade-in-up">
+                <h3 class="text-2xl font-bold text-gray-800 mb-6 flex items-center">
+                    <i class="fas fa-search text-orange-600 mr-3"></i>詳細分析・改善提案
+                </h3>
+                <div id="detailedAnalysis" class="space-y-6"></div>
+            </div>
+
+            <!-- Action Plan -->
+            <div class="bg-white rounded-xl p-8 card-shadow mb-8 fade-in-up">
+                <h3 class="text-2xl font-bold text-gray-800 mb-6 flex items-center">
+                    <i class="fas fa-tasks text-indigo-600 mr-3"></i>実行プラン
+                </h3>
+                <div id="actionPlan" class="space-y-4"></div>
+            </div>
+
+            <!-- SNS Share -->
+            <div class="bg-white rounded-xl p-6 card-shadow mb-8 fade-in-up no-print">
+                <h3 class="text-xl font-bold text-gray-800 mb-4 flex items-center">
+                    <i class="fas fa-share-alt text-pink-600 mr-2"></i>結果をシェア
+                </h3>
+                <div class="flex flex-wrap gap-4">
+                    <button onclick="shareToTwitter()" class="bg-blue-400 hover:bg-blue-500 text-white px-6 py-3 rounded-lg transition-colors duration-200">
+                        <i class="fab fa-twitter mr-2"></i>Twitterでシェア
+                    </button>
+                    <button onclick="shareToLine()" class="bg-green-500 hover:bg-green-600 text-white px-6 py-3 rounded-lg transition-colors duration-200">
+                        <i class="fab fa-line mr-2"></i>LINEでシェア
+                    </button>
+                    <button onclick="copyResults()" class="bg-gray-600 hover:bg-gray-700 text-white px-6 py-3 rounded-lg transition-colors duration-200">
+                        <i class="fas fa-copy mr-2"></i>結果をコピー
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- History Section -->
+        <section id="history-section" class="bg-white rounded-xl p-8 card-shadow mb-8 fade-in-up">
+            <h3 class="text-2xl font-bold text-gray-800 mb-6 flex items-center">
+                <i class="fas fa-history text-teal-600 mr-3"></i>診断履歴
+            </h3>
+            <div id="historyList" class="space-y-4">
+                <p class="text-gray-500 text-center py-8">まだ診断履歴がありません</p>
+            </div>
+        </section>
+
+        <!-- Footer -->
+        <footer class="text-center text-gray-600 mt-12 fade-in-up">
+            <div class="bg-white rounded-xl p-6 card-shadow">
+                <p class="mb-4">家計診断ツール - あなたの家計改善をサポート</p>
+                <div class="flex justify-center space-x-6 text-sm">
+                    <a href="#privacy" class="hover:text-blue-600 transition-colors">プライバシーポリシー</a>
+                    <a href="#terms" class="hover:text-blue-600 transition-colors">利用規約</a>
+                    <a href="#contact" class="hover:text-blue-600 transition-colors">お問い合わせ</a>
+                </div>
+            </div>
+        </footer>
+    </div>
+
+    <script>
+        // 理想的な家計バランス（総務省統計データベース）
+        const idealBudgetRatios = {
+            single: {
+                housing: 0.28,
+                food: 0.15,
+                utilities: 0.06,
+                communication: 0.05,
+                transport: 0.04,
+                entertainment: 0.08,
+                others: 0.14,
+                savings: 0.20
+            },
+            couple: {
+                housing: 0.25,
+                food: 0.18,
+                utilities: 0.07,
+                communication: 0.05,
+                transport: 0.05,
+                entertainment: 0.10,
+                others: 0.15,
+                savings: 0.15
+            },
+            family2: {
+                housing: 0.30,
+                food: 0.20,
+                utilities: 0.08,
+                communication: 0.06,
+                transport: 0.06,
+                entertainment: 0.08,
+                others: 0.17,
+                savings: 0.05
+            },
+            family3: {
+                housing: 0.28,
+                food: 0.22,
+                utilities: 0.09,
+                communication: 0.06,
+                transport: 0.07,
+                entertainment: 0.06,
+                others: 0.20,
+                savings: 0.02
+            },
+            family4: {
+                housing: 0.27,
+                food: 0.25,
+                utilities: 0.10,
+                communication: 0.07,
+                transport: 0.08,
+                entertainment: 0.05,
+                others: 0.18,
+                savings: 0.00
+            }
+        };
+
+        let currentAnalysis = null;
+        let charts = {};
+
+        function analyzeBudget() {
+            const income = parseFloat(document.getElementById('income').value) || 0;
+            const familyType = document.getElementById('familyType').value;
+            const region = document.getElementById('region').value;
+            
+            const expenses = {
+                housing: parseFloat(document.getElementById('housing').value) || 0,
+                food: parseFloat(document.getElementById('food').value) || 0,
+                utilities: parseFloat(document.getElementById('utilities').value) || 0,
+                communication: parseFloat(document.getElementById('communication').value) || 0,
+                transport: parseFloat(document.getElementById('transport').value) || 0,
+                entertainment: parseFloat(document.getElementById('entertainment').value) || 0,
+                others: parseFloat(document.getElementById('others').value) || 0
+            };
+
+            if (income <= 0) {
+                alert('収入を入力してください。');
+                return;
+            }
+
+            const totalExpenses = Object.values(expenses).reduce((sum, val) => sum + val, 0);
+            const balance = income - totalExpenses;
+            const savingsRate = (balance / income) * 100;
+            
+            const idealRatios = idealBudgetRatios[familyType];
+            const analysis = performDetailedAnalysis(income, expenses, idealRatios, familyType, region);
+            
+            currentAnalysis = {
+                income,
+                expenses,
+                balance,
+                savingsRate,
+                analysis,
+                familyType,
+                region,
+                timestamp: new Date()
+            };
+
+            displayResults(currentAnalysis);
+            saveToHistory(currentAnalysis);
+            document.getElementById('results-section').classList.remove('hidden');
+            document.getElementById('results-section').scrollIntoView({ behavior: 'smooth' });
+        }
+
+        function performDetailedAnalysis(income, expenses, idealRatios, familyType, region) {
+            const analysis = {
+                ratios: {},
+                deviations: {},
+                recommendations: [],
+                savingsPotential: 0,
+                riskAreas: []
+            };
+
+            // 現在の比率計算
+            Object.keys(expenses).forEach(category => {
+                analysis.ratios[category] = expenses[category] / income;
+                analysis.deviations[category] = analysis.ratios[category] - idealRatios[category];
+            });
+
+            // 節約ポテンシャル計算
+            let totalSavingsPotential = 0;
+            Object.keys(expenses).forEach(category => {
+                if (analysis.deviations[category] > 0.02) { // 2%以上の超過
+                    const savingsAmount = (analysis.deviations[category] - 0.01) * income;
+                    totalSavingsPotential += savingsAmount;
+                    analysis.riskAreas.push({
+                        category,
+                        excess: savingsAmount,
+                        percentage: analysis.deviations[category] * 100
+                    });
+                }
+            });
+
+            analysis.savingsPotential = totalSavingsPotential;
+
+            // 具体的な推奨事項
+            generateRecommendations(analysis, expenses, income, familyType, region);
+
+            return analysis;
+        }
+
+        function generateRecommendations(analysis, expenses, income, familyType, region) {
+            const recommendations = [];
+
+            // 住居費のチェック
+            if (analysis.deviations.housing > 0.05) {
+                recommendations.push({
+                    category: '住居費',
+                    priority: 'high',
+                    suggestion: '住居費が収入の適正比率を大きく超えています。引っ越しやローンの借り換えを検討しましょう。',
+                    potentialSaving: Math.floor((analysis.deviations.housing - 0.02) * income),
+                    actionItems: ['家賃の安い物件への引っ越し検討', '住宅ローンの借り換え検討', '固定費の見直し']
+                });
+            }
+
+            // 食費のチェック
+            if (analysis.deviations.food > 0.03) {
+                recommendations.push({
+                    category: '食費',
+                    priority: 'medium',
+                    suggestion: '食費を見直すことで大きな節約効果が期待できます。',
+                    potentialSaving: Math.floor((analysis.deviations.food - 0.01) * income),
+                    actionItems: ['外食頻度の見直し', '食材の計画購入', '家計簿アプリの活用']
+                });
+            }
+
+            // 通信費のチェック
+            if (analysis.deviations.communication > 0.02) {
+                recommendations.push({
+                    category: '通信費',
+                    priority: 'high',
+                    suggestion: '通信費は見直し効果が高い項目です。格安SIMやプラン変更を検討しましょう。',
+                    potentialSaving: Math.floor((analysis.deviations.communication - 0.005) * income),
+                    actionItems: ['格安SIMへの変更', '不要なオプションの解約', 'Wi-Fi環境の整備']
+                });
+            }
+
+            // 娯楽費のチェック
+            if (analysis.deviations.entertainment > 0.05) {
+                recommendations.push({
+                    category: '娯楽費',
+                    priority: 'medium',
+                    suggestion: '娯楽費の見直しで生活の質を保ちながら節約できます。',
+                    potentialSaving: Math.floor((analysis.deviations.entertainment - 0.02) * income),
+                    actionItems: ['サブスクリプションの整理', '無料娱楽の活用', '予算設定の徹底']
+                });
+            }
+
+            // 貯蓄率が低い場合の提案
+            const currentSavingsRate = ((income - Object.values(expenses).reduce((a, b) => a + b, 0)) / income) * 100;
+            if (currentSavingsRate < 10) {
+                recommendations.push({
+                    category: '貯蓄',
+                    priority: 'high',
+                    suggestion: '貯蓄率が低めです。先取り貯蓄の仕組みを作りましょう。',
+                    potentialSaving: income * 0.1,
+                    actionItems: ['自動積立の設定', '家計簿での支出管理', '固定費の総合見直し']
+                });
+            }
+
+            analysis.recommendations = recommendations;
+        }
+
+        function displayResults(result) {
+            // サマリー表示
+            const balanceElement = document.getElementById('balance');
+            const savingsRateElement = document.getElementById('savingsRate');
+            const savingsPotentialElement = document.getElementById('savingsPotential');
+
+            balanceElement.textContent = `¥${result.balance.toLocaleString()}`;
+            balanceElement.className = result.balance >= 0 ? 'text-2xl font-bold mt-2 text-green-600' : 'text-2xl font-bold mt-2 text-red-600';
+
+            savingsRateElement.textContent = `${result.savingsRate.toFixed(1)}%`;
+            savingsRateElement.className = result.savingsRate >= 10 ? 'text-2xl font-bold mt-2 text-blue-600' : 'text-2xl font-bold mt-2 text-orange-600';
+
+            savingsPotentialElement.textContent = `¥${result.analysis.savingsPotential.toLocaleString()}`;
+            savingsPotentialElement.className = 'text-2xl font-bold mt-2 text-purple-600';
+
+            // チャート表示
+            displayCharts(result);
+
+            // 詳細分析表示
+            displayDetailedAnalysis(result.analysis);
+
+            // アクションプラン表示
+            displayActionPlan(result.analysis.recommendations);
+        }
+
+        function displayCharts(result) {
+            // 現在の家計構成チャート
+            const ctx1 = document.getElementById('currentBudgetChart').getContext('2d');
+            if (charts.current) charts.current.destroy();
+            
+            const expenseData = Object.entries(result.expenses).map(([key, value]) => ({
+                label: getCategoryName(key),
+                value: value
+            }));
+            
+            expenseData.push({
+                label: '貯蓄・余裕',
+                value: Math.max(0, result.balance)
+            });
+
+            charts.current = new Chart(ctx1, {
+                type: 'doughnut',
+                data: {
+                    labels: expenseData.map(item => item.label),
+                    datasets: [{
+                        data: expenseData.map(item => item.value),
+                        backgroundColor: [
+                            '#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0',
+                            '#9966FF', '#FF9F40', '#FF6384', '#C9CBCF'
+                        ],
+                        borderWidth: 2,
+                        borderColor: '#fff'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'right',
+                            labels: {
+                                generateLabels: function(chart) {
+                                    const data = chart.data;
+                                    return data.labels.map((label, i) => ({
+                                        text: `${label}: ¥${data.datasets[0].data[i].toLocaleString()}`,
+                                        fillStyle: data.datasets[0].backgroundColor[i],
+                                        strokeStyle: data.datasets[0].backgroundColor[i],
+                                        lineWidth: 0,
+                                        hidden: false,
+                                        index: i
+                                    }));
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+
+            // 比較チャート
+            const ctx2 = document.getElementById('comparisonChart').getContext('2d');
+            if (charts.comparison) charts.comparison.destroy();
+
+            const idealRatios = idealBudgetRatios[result.familyType];
+            const categories = Object.keys(result.expenses);
+            
+            charts.comparison = new Chart(ctx2, {
+                type: 'bar',
+                data: {
+                    labels: categories.map(cat => getCategoryName(cat)),
+                    datasets: [{
+                        label: '現在の比率 (%)',
+                        data: categories.map(cat => ((result.expenses[cat] / result.income) * 100).toFixed(1)),
+                        backgroundColor: 'rgba(54, 162, 235, 0.7)',
+                        borderColor: 'rgba(54, 162, 235, 1)',
+                        borderWidth: 1
+                    }, {
+                        label: '理想の比率 (%)',
+                        data: categories.map(cat => (idealRatios[cat] * 100).toFixed(1)),
+                        backgroundColor: 'rgba(75, 192, 192, 0.7)',
+                        borderColor: 'rgba(75, 192, 192, 1)',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            title: {
+                                display: true,
+                                text: '比率 (%)'
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            position: 'top'
+                        }
+                    }
+                }
+            });
+        }
+
+        function displayDetailedAnalysis(analysis) {
+            const container = document.getElementById('detailedAnalysis');
+            container.innerHTML = '';
+
+            // リスクエリアの表示
+            if (analysis.riskAreas.length > 0) {
+                const riskSection = document.createElement('div');
+                riskSection.className = 'bg-red-50 border-l-4 border-red-400 p-4 mb-6';
+                riskSection.innerHTML = `
+                    <h4 class="text-lg font-semibold text-red-800 mb-3">
+                        <i class="fas fa-exclamation-triangle mr-2"></i>改善が必要な項目
+                    </h4>
+                    <div class="space-y-2">
+                        ${analysis.riskAreas.map(area => `
+                            <div class="flex justify-between items-center">
+                                <span class="text-red-700">${getCategoryName(area.category)}</span>
+                                <span class="text-red-600 font-semibold">
+                                    +${area.percentage.toFixed(1)}% (¥${area.excess.toLocaleString()}超過)
+                                </span>
+                            </div>
+                        `).join('')}
+                    </div>
+                `;
+                container.appendChild(riskSection);
+            }
+
+            // 推奨事項の表示
+            analysis.recommendations.forEach(rec => {
+                const recSection = document.createElement('div');
+                const priorityColor = rec.priority === 'high' ? 'orange' : 'blue';
+                recSection.className = `border-l-4 border-${priorityColor}-400 bg-${priorityColor}-50 p-4 mb-4`;
+                recSection.innerHTML = `
+                    <h4 class="text-lg font-semibold text-${priorityColor}-800 mb-2">
+                        <i class="fas fa-lightbulb mr-2"></i>${rec.category}の改善提案
+                        <span class="text-sm bg-${priorityColor}-200 px-2 py-1 rounded ml-2">
+                            優先度: ${rec.priority === 'high' ? '高' : '中'}
+                        </span>
+                    </h4>
+                    <p class="text-${priorityColor}-700 mb-3">${rec.suggestion}</p>
+                    <p class="text-${priorityColor}-600 font-semibold mb-3">
+                        <i class="fas fa-piggy-bank mr-1"></i>
+                        節約可能額: ¥${rec.potentialSaving.toLocaleString()}/月
+                    </p>
+                    <div class="text-sm text-${priorityColor}-600">
+                        <strong>具体的なアクション:</strong>
+                        <ul class="list-disc list-inside mt-1 space-y-1">
+                            ${rec.actionItems.map(item => `<li>${item}</li>`).join('')}
+                        </ul>
+                    </div>
+                `;
+                container.appendChild(recSection);
+            });
+        }
+
+        function displayActionPlan(recommendations) {
+            const container = document.getElementById('actionPlan');
+            container.innerHTML = '';
+
+            const plan = document.createElement('div');
+            plan.innerHTML = `
+                <div class="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg p-6">
+                    <h4 class="text-xl font-bold text-indigo-800 mb-4">
+                        <i class="fas fa-rocket mr-2"></i>30日実行プラン
+                    </h4>
+                    <div class="grid md:grid-cols-3 gap-4">
+                        <div class="bg-white rounded-lg p-4 shadow">
+                            <h5 class="font-semibold text-green-700 mb-2">
+                                <i class="fas fa-calendar-week mr-1"></i>第1週
+                            </h5>
+                            <ul class="text-sm space-y-1">
+                                <li>• 家計簿アプリのダウンロード</li>
+                                <li>• 固定費の洗い出し</li>
+                                <li>• 不要なサブスクの確認</li>
+                            </ul>
+                        </div>
+                        <div class="bg-white rounded-lg p-4 shadow">
+                            <h5 class="font-semibold text-blue-700 mb-2">
+                                <i class="fas fa-calendar-alt mr-1"></i>第2-3週
+                            </h5>
+                            <ul class="text-sm space-y-1">
+                                <li>• 通信費プランの見直し</li>
+                                <li>• 食費の予算設定</li>
+                                <li>• 電力会社の比較検討</li>
+                            </ul>
+                        </div>
+                        <div class="bg-white rounded-lg p-4 shadow">
+                            <h5 class="font-semibold text-purple-700 mb-2">
+                                <i class="fas fa-flag-checkered mr-1"></i>第4週
+                            </h5>
+                            <ul class="text-sm space-y-1">
+                                <li>• 自動積立の設定</li>
+                                <li>• 月次振り返り</li>
+                                <li>• 次月の目標設定</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            `;
+            container.appendChild(plan);
+        }
+
+        function getCategoryName(key) {
+            const names = {
+                housing: '住居費',
+                food: '食費',
+                utilities: '水道光熱費',
+                communication: '通信費',
+                transport: '交通費',
+                entertainment: '娯楽費',
+                others: 'その他'
+            };
+            return names[key] || key;
+        }
+
+        function saveToHistory(analysis) {
+            let history = JSON.parse(localStorage.getItem('budgetHistory') || '[]');
+            history.unshift(analysis);
+            history = history.slice(0, 10); // 最新10件のみ保持
+            localStorage.setItem('budgetHistory', JSON.stringify(history));
+            displayHistory();
+        }
+
+        function displayHistory() {
+            const history = JSON.parse(localStorage.getItem('budgetHistory') || '[]');
+            const container = document.getElementById('historyList');
+            
+            if (history.length === 0) {
+                container.innerHTML = '<p class="text-gray-500 text-center py-8">まだ診断履歴がありません</p>';
+                return;
+            }
+
+            container.innerHTML = history.map((item, index) => `
+                <div class="border rounded-lg p-4 hover:bg-gray-50 transition-colors">
+                    <div class="flex justify-between items-center">
+                        <div>
+                            <span class="font-semibold">診断日: ${new Date(item.timestamp).toLocaleDateString('ja-JP')}</span>
+                            <span class="ml-4 text-sm text-gray-600">
+                                収入: ¥${item.income.toLocaleString()}
+                            </span>
+                            <span class="ml-4 text-sm text-gray-600">
+                                貯蓄率: ${item.savingsRate.toFixed(1)}%
+                            </span>
+                        </div>
+                        <button onclick="loadHistoryItem(${index})" 
+                                class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded text-sm transition-colors">
+                            再表示
+                        </button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function loadHistoryItem(index) {
+            const history = JSON.parse(localStorage.getItem('budgetHistory') || '[]');
+            const item = history[index];
+            if (item) {
+                currentAnalysis = item;
+                displayResults(item);
+                document.getElementById('results-section').classList.remove('hidden');
+                document.getElementById('results-section').scrollIntoView({ behavior: 'smooth' });
+            }
+        }
+
+        function shareToTwitter() {
+            if (!currentAnalysis) return;
+            
+            const text = `家計診断結果📊
+        
+収入: ¥${currentAnalysis.income.toLocaleString()}
+貯蓄率: ${currentAnalysis.savingsRate.toFixed(1)}%
+節約ポテンシャル: ¥${currentAnalysis.analysis.savingsPotential.toLocaleString()}
+
+家計の無駄が見える化できました！
+みんなも試してみて💡
+
+#継続は力なり #家計診断 #節約術 #無料ツール`;
+            
+            const url = encodeURIComponent(window.location.href);
+            const twitterUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${url}`;
+            window.open(twitterUrl, '_blank');
+        }
+
+        function shareToLine() {
+            if (!currentAnalysis) return;
+            
+            const text = `家計診断で節約ポテンシャルを発見！
+        
+節約可能額: ¥${currentAnalysis.analysis.savingsPotential.toLocaleString()}/月
+貯蓄率: ${currentAnalysis.savingsRate.toFixed(1)}%
+
+詳しい分析結果はこちら👇`;
+            
+            const url = window.location.href;
+            const lineUrl = `https://social-plugins.line.me/lineit/share?url=${encodeURIComponent(url)}&text=${encodeURIComponent(text)}`;
+            window.open(lineUrl, '_blank');
+        }
+
+        function copyResults() {
+            if (!currentAnalysis) return;
+            
+            const text = `【家計診断結果】
+        
+📊 基本情報
+収入: ¥${currentAnalysis.income.toLocaleString()}
+収支バランス: ¥${currentAnalysis.balance.toLocaleString()}
+貯蓄率: ${currentAnalysis.savingsRate.toFixed(1)}%
+
+💡 節約ポテンシャル
+¥${currentAnalysis.analysis.savingsPotential.toLocaleString()}/月
+
+🎯 改善提案
+${currentAnalysis.analysis.recommendations.map(rec => 
+    `${rec.category}: ¥${rec.potentialSaving.toLocaleString()}/月の節約可能`
+).join('\n')}
+
+診断サイト: ${window.location.href}`;
+
+            navigator.clipboard.writeText(text).then(() => {
+                alert('結果をクリップボードにコピーしました！');
+            });
+        }
+
+        // PWA対応
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                const swCode = `
+                    const CACHE_NAME = 'budget-analyzer-v1';
+                    const urlsToCache = ['/'];
+                    
+                    self.addEventListener('install', event => {
+                        event.waitUntil(
+                            caches.open(CACHE_NAME)
+                                .then(cache => cache.addAll(urlsToCache))
+                        );
+                    });
+                    
+                    self.addEventListener('fetch', event => {
+                        event.respondWith(
+                            caches.match(event.request)
+                                .then(response => response || fetch(event.request))
+                        );
+                    });
+                `;
+                
+                const blob = new Blob([swCode], { type: 'application/javascript' });
+                const swUrl = URL.createObjectURL(blob);
+                
+                navigator.serviceWorker.register(swUrl);
+            });
+        }
+
+        // 初期化
+        document.addEventListener('DOMContentLoaded', () => {
+            displayHistory();
+            
+            // フォームのリアルタイム計算
+            const inputs = ['income', 'housing', 'food', 'utilities', 'communication', 'transport', 'entertainment', 'others'];
+            inputs.forEach(id => {
+                document.getElementById(id).addEventListener('input', updatePreview);
+            });
+        });
+
+        function updatePreview() {
+            const income = parseFloat(document.getElementById('income').value) || 0;
+            const totalExpenses = ['housing', 'food', 'utilities', 'communication', 'transport', 'entertainment', 'others']
+                .reduce((sum, id) => sum + (parseFloat(document.getElementById(id).value) || 0), 0);
+            
+            if (income > 0) {
+                const balance = income - totalExpenses;
+                const savingsRate = (balance / income) * 100;
+                
+                // リアルタイムプレビュー表示（簡易版）
+                console.log(`Preview - Balance: ¥${balance.toLocaleString()}, Savings Rate: ${savingsRate.toFixed(1)}%`);
+            }
+        }
+    </script>
+</body>
+</html>
